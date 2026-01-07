@@ -78,7 +78,8 @@ check_prerequisites() {
 # Get install directory from user
 get_install_dir() {
   echo -e "Where should we install Claude Convos?"
-  read -p "Directory [$DEFAULT_INSTALL_DIR]: " INSTALL_DIR
+  printf "Directory [$DEFAULT_INSTALL_DIR]: "
+  read INSTALL_DIR < /dev/tty
   INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
 
   # Expand ~ to home directory
@@ -91,7 +92,8 @@ get_install_dir() {
 clone_repo() {
   if [ -d "$INSTALL_DIR" ]; then
     warn "Directory already exists: $INSTALL_DIR"
-    read -p "Remove and reinstall? [y/N]: " CONFIRM
+    printf "Remove and reinstall? [y/N]: "
+    read CONFIRM < /dev/tty
     if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
       rm -rf "$INSTALL_DIR"
     else
@@ -132,7 +134,8 @@ get_terminal() {
   echo "  5) alacritty"
   echo "  6) warp"
   echo ""
-  read -p "Choice [1-6, default 1]: " TERM_CHOICE
+  printf "Choice [1-6, default 1]: "
+  read TERM_CHOICE < /dev/tty
 
   case "$TERM_CHOICE" in
     2) TERMINAL="iterm" ;;
