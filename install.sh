@@ -163,13 +163,12 @@ export CONVOS_HOME="$INSTALL_DIR"
 export CONVOS_TERMINAL="$TERMINAL"
 convos() {
   cd "\$CONVOS_HOME" || return
-  if [ "\$1" = "update" ]; then
-    echo "Updating convos..."
-    git pull && npm install --silent && npm run build --silent
-    echo "Done!"
-  else
-    npm start
+  git fetch -q
+  if [ "\$(git rev-parse HEAD)" != "\$(git rev-parse @{u})" ]; then
+    echo "Updating..."
+    git pull -q && npm install --silent && npm run build --silent && echo "Updated!"
   fi
+  npm start
 }
 # CONVOS END
 EOF
