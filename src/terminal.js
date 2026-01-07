@@ -11,8 +11,14 @@ const LAUNCHERS = {
     args: ['-e', `tell app "iTerm" to create window with default profile command "cd '${cwd}' && ${cmd}"`]
   }),
   ghostty: (cwd, cmd) => ({
-    cmd: 'open',
-    args: ['-na', 'Ghostty.app', '--args', '--working-directory=' + cwd, '-e', cmd]
+    cmd: 'osascript',
+    args: [
+      '-e', 'tell app "Ghostty" to activate',
+      '-e', `tell app "System Events" to keystroke "t" using command down`,
+      '-e', 'delay 0.3',
+      '-e', `tell app "System Events" to keystroke "cd '${cwd}' && ${cmd}"`,
+      '-e', 'tell app "System Events" to key code 36'
+    ]
   })
 };
 
