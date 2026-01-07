@@ -2,6 +2,7 @@
   import { RefreshCw } from 'lucide-svelte';
   import { lastSync, isRefreshing, fetchConversations } from '../stores.js';
   import Button from './Button.svelte';
+  import ThemeToggle from './ThemeToggle.svelte';
 
   function formatSyncTime(date) {
     if (!date) return 'loading...';
@@ -17,6 +18,7 @@
   <div class="header-content">
     <h1>CLAUDE CONVERSATIONS</h1>
     <div class="header-meta">
+      <ThemeToggle />
       <span class="last-sync">{formatSyncTime($lastSync)}</span>
       <Button icon={RefreshCw} disabled={$isRefreshing} onclick={handleRefresh}>
         {$isRefreshing ? '...' : 'refresh'}

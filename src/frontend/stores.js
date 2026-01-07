@@ -18,6 +18,7 @@ export const filters = writable({
 // UI state
 export const toast = writable({ message: '', visible: false });
 export const reportModal = writable({ visible: false, content: '', loading: false, error: null });
+export const conversationModal = writable({ visible: false, conversation: null, messages: [], loading: false, error: null });
 export const isRefreshing = writable(false);
 export const viewMode = writable('list'); // 'list' | 'grid'
 
@@ -101,6 +102,32 @@ export function closeReportModal() {
   reportModal.set({ visible: false, content: '', loading: false, error: null });
 }
 
+export async function openConversation(conversation) {
+  conversationModal.set({ visible: true, conversation, messages: [], loading: true, error: null });
+
+  try {
+    const params = new URLSearchParams({
+      id: conversation.id,
+      projectPath: conversation.projectDir
+    });
+    const res = await fetch(`/api/conversation?${params}`);
+    const data = await res.json();
+
+    conversationModal.update(m => ({
+      ...m,
+      loading: false,
+      messages: data.messages || [],
+      error: data.error || null
+    }));
+  } catch {
+    conversationModal.update(m => ({ ...m, loading: false, error: 'failed to load conversation' }));
+  }
+}
+
+export function closeConversationModal() {
+  conversationModal.set({ visible: false, conversation: null, messages: [], loading: false, error: null });
+}
+
 // Resume session in terminal (with clipboard fallback)
 export async function resumeInTerminal(conversation) {
   try {
@@ -128,4 +155,48 @@ export async function resumeInTerminal(conversation) {
     const { copyToClipboard } = await import('./utils.js');
     return copyToClipboard(conversation.resumeCommand);
   }
+}
+
+// Theme: 'system' | 'light' | 'dark'
+export const theme = writable('system');
+export const systemPrefersDark = writable(true);
+
+export const resolvedTheme = derived(
+  [theme, systemPrefersDark],
+  ([$theme, $systemPrefersDark]) => {
+    if ($theme === 'system') {
+      return $systemPrefersDark ? 'dark' : 'light';
+    }
+    return $theme;
+  }
+);
+
+export function initTheme() {
+  // Load saved preference
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light' || saved === 'dark' || saved === 'system') {
+    theme.set(saved);
+  }
+
+  // Detect system preference
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  systemPrefersDark.set(mediaQuery.matches);
+
+  // Listen for system changes
+  mediaQuery.addEventListener('change', (e) => {
+    systemPrefersDark.set(e.matches);
+  });
+}
+
+export function setTheme(value) {
+  theme.set(value);
+  localStorage.setItem('theme', value);
+}
+
+export function cycleTheme() {
+  theme.update(current => {
+    const next = current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system';
+    localStorage.setItem('theme', next);
+    return next;
+  });
 }

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { fetchConversations } from './stores.js';
+  import { fetchConversations, initTheme, resolvedTheme } from './stores.js';
   import Header from './components/Header.svelte';
   import ContinueSession from './components/ContinueSession.svelte';
   import StatsBar from './components/StatsBar.svelte';
@@ -8,12 +8,18 @@
   import Filters from './components/Filters.svelte';
   import ConversationsList from './components/ConversationsList.svelte';
   import ReportModal from './components/ReportModal.svelte';
+  import ConversationModal from './components/ConversationModal.svelte';
   import Toast from './components/Toast.svelte';
 
   let error = $state(null);
   let loading = $state(true);
 
+  $effect(() => {
+    document.documentElement.dataset.theme = $resolvedTheme;
+  });
+
   onMount(async () => {
+    initTheme();
     try {
       await fetchConversations();
     } catch (e) {
@@ -45,6 +51,7 @@
   {/if}
 
   <ReportModal />
+  <ConversationModal />
   <Toast />
 </div>
 
