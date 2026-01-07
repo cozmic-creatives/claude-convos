@@ -8,61 +8,84 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 CYAN='\033[0;36m'
+DIM='\033[2m'
 NC='\033[0m'
 
-# Default values
+# Config
 DEFAULT_INSTALL_DIR="$HOME/.convos"
 REPO_URL="https://github.com/cozmic-creatives/claude-convos.git"
+INSTALL_DIR=""
+CLEANUP_ON_ERROR=false
 
-# Print banner with animation
+# Cleanup trap
+cleanup() {
+  if $CLEANUP_ON_ERROR && [ -n "$INSTALL_DIR" ] && [ -d "$INSTALL_DIR" ]; then
+    rm -rf "$INSTALL_DIR"
+    echo -e "\n${YELLOW}Cleaned up partial installation${NC}"
+  fi
+}
+trap cleanup EXIT
+
+# Helpers
+success() { echo -e "${GREEN}✓${NC} $1"; }
+error() { echo -e "${RED}✗${NC} $1"; exit 1; }
+warn() { echo -e "${YELLOW}!${NC} $1"; }
+
+# Spinner for long operations
+spin() {
+  local pid=$1
+  local msg=$2
+  local spinchars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  local i=0
+  while kill -0 "$pid" 2>/dev/null; do
+    printf "\r  ${DIM}%s${NC} %s" "${spinchars:i++%10:1}" "$msg"
+    sleep 0.1
+  done
+  printf "\r"
+}
+
+# Run command with spinner
+run_with_spinner() {
+  local msg=$1
+  shift
+  "$@" &>/dev/null &
+  spin $! "$msg"
+  wait $!
+}
+
+# Banner with blink animation
 print_banner() {
   echo ""
-  # Simple blink animation
-  for i in 1 2 3; do
+  for _ in 1 2 3; do
     printf "\r  ${CYAN}(◕‿◕)${NC}  Hi! Let's set up Claude Convos"
     sleep 0.3
     printf "\r  ${CYAN}(─‿─)${NC}  Hi! Let's set up Claude Convos"
     sleep 0.15
   done
-  printf "\r  ${CYAN}(◕‿◕)${NC}  Hi! Let's set up Claude Convos\n"
-  echo ""
-}
-
-success() {
-  echo -e "${GREEN}✓${NC} $1"
-}
-
-error() {
-  echo -e "${RED}✗ Error:${NC} $1"
-  exit 1
-}
-
-warn() {
-  echo -e "${YELLOW}!${NC} $1"
+  printf "\r  ${CYAN}(◕‿◕)${NC}  Hi! Let's set up Claude Convos\n\n"
 }
 
 # Check prerequisites
-check_prerequisites() {
+check_prereqs() {
   echo "Checking prerequisites..."
   echo ""
 
-  command -v git >/dev/null 2>&1 || error "Git is required. Install from https://git-scm.com"
-  success "Git found"
+  command -v git &>/dev/null || error "Git required - https://git-scm.com"
+  success "git"
 
-  command -v node >/dev/null 2>&1 || error "Node.js 18+ required. Install from https://nodejs.org"
-  NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-  [ "$NODE_VERSION" -ge 18 ] || error "Node.js 18+ required (found v$NODE_VERSION)"
-  success "Node.js v$(node -v | cut -d'v' -f2) found"
+  command -v node &>/dev/null || error "Node.js 18+ required - https://nodejs.org"
+  local node_ver=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+  [ "$node_ver" -ge 18 ] || error "Node.js 18+ required (found v$node_ver)"
+  success "node $(node -v)"
 
-  command -v npm >/dev/null 2>&1 || error "npm is required"
-  success "npm found"
+  command -v npm &>/dev/null || error "npm required"
+  success "npm"
   echo ""
 }
 
 # Get install directory
 get_install_dir() {
-  echo "Where should we install Claude Convos?"
-  printf "Directory [%s]: " "$DEFAULT_INSTALL_DIR"
+  printf "Install location [${DIM}%s${NC}]: " "$DEFAULT_INSTALL_DIR"
   read -r INSTALL_DIR </dev/tty || INSTALL_DIR=""
   INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
   INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
@@ -72,62 +95,46 @@ get_install_dir() {
 # Clone repository
 clone_repo() {
   if [ -d "$INSTALL_DIR" ]; then
-    warn "Directory already exists: $INSTALL_DIR"
+    warn "Directory exists: $INSTALL_DIR"
     printf "Remove and reinstall? [y/N]: "
-    read -r CONFIRM </dev/tty || CONFIRM=""
-    if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-      rm -rf "$INSTALL_DIR"
-    else
-      echo "Installation cancelled."
-      exit 0
-    fi
+    read -r confirm </dev/tty || confirm=""
+    [[ "$confirm" =~ ^[Yy]$ ]] || { echo "Cancelled."; exit 0; }
+    rm -rf "$INSTALL_DIR"
   fi
 
-  echo "Cloning repository..."
-  if git clone --depth 1 "$REPO_URL" "$INSTALL_DIR" >/dev/null 2>&1; then
-    success "Cloned to $INSTALL_DIR"
-  else
-    error "Failed to clone repository"
-  fi
+  CLEANUP_ON_ERROR=true
+  run_with_spinner "Cloning repository..." git clone --depth 1 "$REPO_URL" "$INSTALL_DIR"
+  success "Cloned to $INSTALL_DIR"
 }
 
-# Install dependencies
-install_deps() {
-  echo "Installing dependencies (this may take a moment)..."
+# Install deps and build (combined)
+setup_project() {
   cd "$INSTALL_DIR" || error "Cannot enter $INSTALL_DIR"
-  if npm install --silent >/dev/null 2>&1; then
-    success "Dependencies installed"
-  else
-    error "Failed to install dependencies"
-  fi
-}
 
-# Build frontend
-build_frontend() {
-  echo "Building frontend..."
-  cd "$INSTALL_DIR" || error "Cannot enter $INSTALL_DIR"
-  if npm run build --silent >/dev/null 2>&1; then
-    success "Frontend built"
-  else
-    error "Failed to build frontend"
-  fi
+  run_with_spinner "Installing dependencies..." npm install --silent
+  success "Dependencies installed"
+
+  run_with_spinner "Building frontend..." npm run build --silent
+  success "Built"
+
+  CLEANUP_ON_ERROR=false
 }
 
 # Get terminal preference
 get_terminal() {
   echo ""
-  echo "Select your preferred terminal:"
-  echo "  1) terminal   (macOS default)"
-  echo "  2) iterm      (iTerm2)"
-  echo "  3) ghostty"
-  echo "  4) kitty"
-  echo "  5) alacritty"
-  echo "  6) warp"
+  echo "Select your terminal:"
+  echo -e "  ${DIM}1)${NC} terminal  ${DIM}(macOS default)${NC}"
+  echo -e "  ${DIM}2)${NC} iterm"
+  echo -e "  ${DIM}3)${NC} ghostty"
+  echo -e "  ${DIM}4)${NC} kitty"
+  echo -e "  ${DIM}5)${NC} alacritty"
+  echo -e "  ${DIM}6)${NC} warp"
   echo ""
-  printf "Choice [1-6, default 1]: "
-  read -r TERM_CHOICE </dev/tty || TERM_CHOICE=""
+  printf "Choice [${DIM}1${NC}]: "
+  read -r choice </dev/tty || choice=""
 
-  case "$TERM_CHOICE" in
+  case "$choice" in
     2) TERMINAL="iterm" ;;
     3) TERMINAL="ghostty" ;;
     4) TERMINAL="kitty" ;;
@@ -135,12 +142,12 @@ get_terminal() {
     6) TERMINAL="warp" ;;
     *) TERMINAL="terminal" ;;
   esac
-
-  success "Terminal set to: $TERMINAL"
+  success "Terminal: $TERMINAL"
 }
 
-# Detect shell config
-detect_shell_config() {
+# Setup shell config
+setup_shell() {
+  # Detect shell config
   if [ -f "$HOME/.zshrc" ]; then
     SHELL_RC="$HOME/.zshrc"
   elif [ -f "$HOME/.bashrc" ]; then
@@ -148,17 +155,13 @@ detect_shell_config() {
   else
     SHELL_RC="$HOME/.profile"
   fi
-}
-
-# Setup shell alias
-setup_shell() {
-  detect_shell_config
 
   # Remove old config if exists
   if grep -q "# CONVOS START" "$SHELL_RC" 2>/dev/null; then
     sed -i.bak '/# CONVOS START/,/# CONVOS END/d' "$SHELL_RC"
   fi
 
+  # Add new config
   cat >> "$SHELL_RC" << EOF
 
 # CONVOS START
@@ -168,33 +171,31 @@ alias convos='cd "\$CONVOS_HOME" && npm start'
 # CONVOS END
 EOF
 
-  success "Added 'convos' alias to $(basename "$SHELL_RC")"
+  success "Added to $(basename "$SHELL_RC")"
 }
 
-# Print completion
-print_complete() {
+# Finish and launch
+finish() {
   echo ""
-  echo -e "${GREEN}Installation complete!${NC}"
+  echo -e "${GREEN}Done!${NC} Launching convos..."
   echo ""
-  echo "  Run this to reload your shell:"
-  echo -e "    ${CYAN}source $SHELL_RC${NC}"
-  echo ""
-  echo "  Then start the app:"
-  echo -e "    ${CYAN}convos${NC}"
-  echo ""
+
+  # Source and run
+  export CONVOS_HOME="$INSTALL_DIR"
+  export CONVOS_TERMINAL="$TERMINAL"
+  cd "$INSTALL_DIR" && npm start
 }
 
 # Main
 main() {
   print_banner
-  check_prerequisites
+  check_prereqs
   get_install_dir
   clone_repo
-  install_deps
-  build_frontend
+  setup_project
   get_terminal
   setup_shell
-  print_complete
+  finish
 }
 
 main
