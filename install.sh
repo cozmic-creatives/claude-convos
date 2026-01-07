@@ -161,7 +161,16 @@ setup_shell() {
 # CONVOS START
 export CONVOS_HOME="$INSTALL_DIR"
 export CONVOS_TERMINAL="$TERMINAL"
-alias convos='cd "\$CONVOS_HOME" && npm start'
+convos() {
+  cd "\$CONVOS_HOME" || return
+  if [ "\$1" = "update" ]; then
+    echo "Updating convos..."
+    git pull && npm install --silent && npm run build --silent
+    echo "Done!"
+  else
+    npm start
+  fi
+}
 # CONVOS END
 EOF
 
