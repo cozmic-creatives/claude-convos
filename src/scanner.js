@@ -225,6 +225,7 @@ export async function scanConversations(categorizer) {
           ...session,
           project: projectName,
           projectPath: originalPath,
+          projectDir: projectDir,  // Encoded dir name for file access
           category,
           resumeCommand: `claude --resume ${session.id}`
         });

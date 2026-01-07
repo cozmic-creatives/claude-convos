@@ -6,6 +6,7 @@ import { scanConversations, generateInsights } from './scanner.js';
 import { getCategorizer } from './categorizer.js';
 import { generateReport } from './reporter.js';
 import { launchTerminal } from './terminal.js';
+import { getConversation } from './conversation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -112,6 +113,27 @@ export function createServer(options = {}) {
         sendJson(res, result);
       } catch (error) {
         sendJson(res, { error: error.message }, 500);
+      }
+      return;
+    }
+
+    // API: Get full conversation content
+    if (req.url.startsWith('/api/conversation?') && req.method === 'GET') {
+      try {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const sessionId = url.searchParams.get('id');
+        const projectPath = url.searchParams.get('projectPath');
+
+        if (!sessionId || !projectPath) {
+          sendJson(res, { error: 'Missing id or projectPath' }, 400);
+          return;
+        }
+
+        const result = await getConversation(sessionId, projectPath);
+        sendJson(res, result);
+      } catch (error) {
+        const status = error.message === 'Conversation file not found' ? 404 : 500;
+        sendJson(res, { error: error.message }, status);
       }
       return;
     }

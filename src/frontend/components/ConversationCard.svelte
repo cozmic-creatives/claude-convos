@@ -1,20 +1,27 @@
 <script>
   import { Play, GitBranch, Check } from 'lucide-svelte';
   import { formatTimeAgo } from '../utils.js';
-  import { resumeInTerminal } from '../stores.js';
+  import { resumeInTerminal, openConversation } from '../stores.js';
   import Button from './Button.svelte';
 
   let { conversation, compact = false } = $props();
   let resuming = $state(false);
 
-  async function resume() {
+  async function resume(e) {
+    e.stopPropagation();
     resuming = true;
     await resumeInTerminal(conversation);
     setTimeout(() => resuming = false, 1500);
   }
+
+  function handleCardClick() {
+    openConversation(conversation);
+  }
 </script>
 
-<div class="card" class:compact>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<div class="card" class:compact onclick={handleCardClick}>
   <div class="header">
     <span class="project">{conversation.project || 'unknown'}</span>
     <span class="time">{formatTimeAgo(conversation.lastMessageTime)}</span>
@@ -43,6 +50,7 @@
     border-bottom: none;
     padding: 12px 14px;
     transition: background 0.15s;
+    cursor: pointer;
   }
 
   .card:last-child {

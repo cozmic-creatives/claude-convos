@@ -1,19 +1,6 @@
 <script>
-  import { X } from 'lucide-svelte';
   import { reportModal, closeReportModal } from '../stores.js';
-  import Button from './Button.svelte';
-
-  function handleBackdropClick(e) {
-    if (e.target === e.currentTarget) {
-      closeReportModal();
-    }
-  }
-
-  function handleKeydown(e) {
-    if (e.key === 'Escape') {
-      closeReportModal();
-    }
-  }
+  import Modal from './Modal.svelte';
 
   function renderMarkdown(text) {
     if (!text) return '';
@@ -27,78 +14,24 @@
   }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
-{#if $reportModal.visible}
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <div class="modal" onclick={handleBackdropClick} onkeydown={handleKeydown} role="dialog" aria-modal="true" tabindex="-1">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span>weekly report</span>
-        <Button variant="icon" onclick={closeReportModal}><X size={18} strokeWidth={1.5} /></Button>
-      </div>
-      <div class="modal-body">
-        {#if $reportModal.loading}
-          <div class="report-loading">
-            <div class="loading-spinner"></div>
-            <span>generating report via claude cli...</span>
-            <span class="loading-hint">this may take 10-30 seconds</span>
-          </div>
-        {:else if $reportModal.error}
-          <div class="report-error">
-            <span class="error-icon">!</span>
-            <span>{$reportModal.error}</span>
-          </div>
-        {:else}
-          <div class="report-text">{@html renderMarkdown($reportModal.content)}</div>
-        {/if}
-      </div>
+<Modal visible={$reportModal.visible} title="weekly report" onclose={closeReportModal}>
+  {#if $reportModal.loading}
+    <div class="report-loading">
+      <div class="loading-spinner"></div>
+      <span>generating report via claude cli...</span>
+      <span class="loading-hint">this may take 10-30 seconds</span>
     </div>
-  </div>
-{/if}
+  {:else if $reportModal.error}
+    <div class="report-error">
+      <span class="error-icon">!</span>
+      <span>{$reportModal.error}</span>
+    </div>
+  {:else}
+    <div class="report-text">{@html renderMarkdown($reportModal.content)}</div>
+  {/if}
+</Modal>
 
 <style>
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
-
-  .modal-content {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .modal-header span {
-    color: var(--text);
-    font-size: 0.9rem;
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-    overflow-y: auto;
-  }
-
   .report-loading {
     color: var(--text-dim);
     text-align: center;
