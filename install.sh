@@ -5,6 +5,9 @@
 
 set -e
 
+# Ensure we can read from terminal
+exec < /dev/tty
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -79,7 +82,7 @@ check_prerequisites() {
 get_install_dir() {
   echo -e "Where should we install Claude Convos?"
   printf "Directory [$DEFAULT_INSTALL_DIR]: "
-  read INSTALL_DIR < /dev/tty
+  read INSTALL_DIR
   INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
 
   # Expand ~ to home directory
@@ -93,7 +96,7 @@ clone_repo() {
   if [ -d "$INSTALL_DIR" ]; then
     warn "Directory already exists: $INSTALL_DIR"
     printf "Remove and reinstall? [y/N]: "
-    read CONFIRM < /dev/tty
+    read CONFIRM
     if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
       rm -rf "$INSTALL_DIR"
     else
@@ -135,7 +138,7 @@ get_terminal() {
   echo "  6) warp"
   echo ""
   printf "Choice [1-6, default 1]: "
-  read TERM_CHOICE < /dev/tty
+  read TERM_CHOICE
 
   case "$TERM_CHOICE" in
     2) TERMINAL="iterm" ;;
