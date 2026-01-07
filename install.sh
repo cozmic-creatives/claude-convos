@@ -166,7 +166,9 @@ convos() {
   git fetch -q
   if [ "\$(git rev-parse HEAD)" != "\$(git rev-parse @{u})" ]; then
     echo "Updating..."
-    git pull -q && npm install --silent && npm run build --silent && echo "Updated!"
+    git pull -q && npm install --silent && npm run build --silent
+    lsof -ti:3847 | xargs kill 2>/dev/null
+    echo "Updated!"
   fi
   npm start
 }
