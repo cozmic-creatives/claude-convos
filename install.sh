@@ -14,16 +14,17 @@ NC='\033[0m'
 DEFAULT_INSTALL_DIR="$HOME/.convos"
 REPO_URL="https://github.com/cozmic-creatives/claude-convos.git"
 
-# Print banner
+# Print banner with animation
 print_banner() {
   echo ""
-  echo -e "${CYAN}    .--."
-  echo "   |o_o |"
-  echo -e "   |:_/ |   ${NC}Hi! Let's set up Claude Convos"
-  echo -e "${CYAN}  //   \\ \\"
-  echo " (|     | )"
-  echo "/'\_   _/\`\\"
-  echo -e "\\___)=(___)/${NC}"
+  # Simple blink animation
+  for i in 1 2 3; do
+    printf "\r  ${CYAN}(◕‿◕)${NC}  Hi! Let's set up Claude Convos"
+    sleep 0.3
+    printf "\r  ${CYAN}(─‿─)${NC}  Hi! Let's set up Claude Convos"
+    sleep 0.15
+  done
+  printf "\r  ${CYAN}(◕‿◕)${NC}  Hi! Let's set up Claude Convos\n"
   echo ""
 }
 
