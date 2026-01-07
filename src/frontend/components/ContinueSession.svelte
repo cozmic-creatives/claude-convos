@@ -1,7 +1,7 @@
 <script>
   import { Play } from 'lucide-svelte';
-  import { conversations } from '../stores.js';
-  import { formatTimeAgo, copyToClipboard } from '../utils.js';
+  import { conversations, resumeInTerminal } from '../stores.js';
+  import { formatTimeAgo } from '../utils.js';
   import Button from './Button.svelte';
 
   let latest = $derived($conversations[0] || null);
@@ -17,7 +17,7 @@
       {/if}
       <span class="meta">{formatTimeAgo(latest.lastMessageTime)}</span>
     </div>
-    <Button variant="primary" icon={Play} onclick={() => copyToClipboard(latest.resumeCommand)}>
+    <Button variant="primary" icon={Play} onclick={() => resumeInTerminal(latest)}>
       resume
     </Button>
   </div>

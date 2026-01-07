@@ -1,7 +1,7 @@
 <script>
   import { FileText, Play } from 'lucide-svelte';
-  import { insights, generateReport } from '../stores.js';
-  import { copyToClipboard, INSIGHT_ICONS } from '../utils.js';
+  import { insights, generateReport, resumeInTerminal } from '../stores.js';
+  import { INSIGHT_ICONS } from '../utils.js';
   import Button from './Button.svelte';
 </script>
 
@@ -16,8 +16,8 @@
         <div class="insight-item">
           <span class="insight-icon">{INSIGHT_ICONS[insight.type] || '>'}</span>
           <span class="insight-message">{insight.message}</span>
-          {#if insight.conversation?.resumeCommand}
-            <Button icon={Play} onclick={() => copyToClipboard(insight.conversation.resumeCommand)}>
+          {#if insight.conversation}
+            <Button icon={Play} onclick={() => resumeInTerminal(insight.conversation)}>
               resume
             </Button>
           {/if}

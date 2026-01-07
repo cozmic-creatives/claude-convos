@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { scanConversations, generateInsights } from './scanner.js';
 import { getCategorizer } from './categorizer.js';
 import { generateReport } from './reporter.js';
+import { launchTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -112,6 +113,26 @@ export function createServer(options = {}) {
       } catch (error) {
         sendJson(res, { error: error.message }, 500);
       }
+      return;
+    }
+
+    // API: Resume session in terminal
+    if (req.url === '/api/resume' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', async () => {
+        try {
+          const { sessionId, projectPath } = JSON.parse(body);
+          if (!sessionId || !projectPath) {
+            sendJson(res, { error: 'Missing sessionId or projectPath' }, 400);
+            return;
+          }
+          const result = await launchTerminal(sessionId, projectPath);
+          sendJson(res, result);
+        } catch (error) {
+          sendJson(res, { error: error.message }, 500);
+        }
+      });
       return;
     }
 

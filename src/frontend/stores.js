@@ -100,3 +100,32 @@ export async function generateReport() {
 export function closeReportModal() {
   reportModal.set({ visible: false, content: '', loading: false, error: null });
 }
+
+// Resume session in terminal (with clipboard fallback)
+export async function resumeInTerminal(conversation) {
+  try {
+    const res = await fetch('/api/resume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: conversation.id,
+        projectPath: conversation.projectPath
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('opening terminal...');
+      return true;
+    }
+    // Fallback to clipboard on failure
+    console.warn('Terminal launch failed:', data.error);
+    const { copyToClipboard } = await import('./utils.js');
+    return copyToClipboard(conversation.resumeCommand);
+  } catch (error) {
+    // Fallback to clipboard on network error
+    console.warn('Resume API error:', error);
+    const { copyToClipboard } = await import('./utils.js');
+    return copyToClipboard(conversation.resumeCommand);
+  }
+}

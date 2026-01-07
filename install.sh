@@ -127,9 +127,6 @@ get_terminal() {
   echo -e "  ${DIM}1)${NC} terminal  ${DIM}(macOS default)${NC}"
   echo -e "  ${DIM}2)${NC} iterm"
   echo -e "  ${DIM}3)${NC} ghostty"
-  echo -e "  ${DIM}4)${NC} kitty"
-  echo -e "  ${DIM}5)${NC} alacritty"
-  echo -e "  ${DIM}6)${NC} warp"
   echo ""
   printf "Choice [${DIM}1${NC}]: "
   read -r choice </dev/tty || choice=""
@@ -137,9 +134,6 @@ get_terminal() {
   case "$choice" in
     2) TERMINAL="iterm" ;;
     3) TERMINAL="ghostty" ;;
-    4) TERMINAL="kitty" ;;
-    5) TERMINAL="alacritty" ;;
-    6) TERMINAL="warp" ;;
     *) TERMINAL="terminal" ;;
   esac
   success "Terminal: $TERMINAL"

@@ -1,17 +1,16 @@
 <script>
   import { Play, GitBranch, Check } from 'lucide-svelte';
-  import { formatTimeAgo, copyToClipboard } from '../utils.js';
+  import { formatTimeAgo } from '../utils.js';
+  import { resumeInTerminal } from '../stores.js';
   import Button from './Button.svelte';
 
   let { conversation, compact = false } = $props();
-  let copying = $state(false);
+  let resuming = $state(false);
 
-  async function copyCommand() {
-    const success = await copyToClipboard(conversation.resumeCommand);
-    if (success) {
-      copying = true;
-      setTimeout(() => copying = false, 1500);
-    }
+  async function resume() {
+    resuming = true;
+    await resumeInTerminal(conversation);
+    setTimeout(() => resuming = false, 1500);
   }
 </script>
 
@@ -32,8 +31,8 @@
       {/if}
       <span class="msgs">{conversation.messageCount || 0} msgs</span>
     </div>
-    <Button icon={copying ? Check : Play} onclick={copyCommand}>
-      {copying ? 'copied' : 'resume'}
+    <Button icon={resuming ? Check : Play} onclick={resume}>
+      {resuming ? 'opening' : 'resume'}
     </Button>
   </div>
 </div>
