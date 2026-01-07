@@ -125,6 +125,9 @@
     font-size: 11px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .pill:first-child {
@@ -156,6 +159,8 @@
     gap: 8px;
     color: var(--text-muted);
     transition: border-color 0.15s;
+    width: 100%;
+    height: 26px;
   }
 
   .search-wrapper:focus-within {
@@ -178,8 +183,8 @@
   }
 
   .icon-pill {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     padding: 0;
     display: inline-flex;
     align-items: center;

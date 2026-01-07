@@ -50,7 +50,7 @@
 
 <style>
   .app {
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 24px 16px;
   }

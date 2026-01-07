@@ -3,6 +3,7 @@
 </script>
 
 <div class="stats-bar">
+  <span class="label">STATS</span>
   <span class="stat"><strong>{$stats.total}</strong> total</span>
   <span class="stat"><strong>{$stats.work}</strong> work</span>
   <span class="stat"><strong>{$stats.sideProject}</strong> side</span>
@@ -12,11 +13,18 @@
 <style>
   .stats-bar {
     display: flex;
+    align-items: center;
     gap: 16px;
     padding: 8px 16px;
     border: 1px solid var(--border);
     margin-bottom: 16px;
     font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .label {
+    font-size: 10px;
+    letter-spacing: 1px;
     color: var(--text-muted);
   }
 

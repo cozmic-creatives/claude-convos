@@ -8,10 +8,10 @@ export const insights = writable([]);
 export const stats = writable({ total: 0, work: 0, sideProject: 0, other: 0 });
 export const lastSync = writable(null);
 
-// Filters (default to today)
+// Filters (default to week)
 export const filters = writable({
   category: 'all',
-  time: 'today',
+  time: 'week',
   search: ''
 });
 

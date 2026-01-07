@@ -26,7 +26,7 @@
 
   .conversations.grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0;
   }
 
@@ -57,6 +57,12 @@
     color: var(--text-muted);
     font-size: 12px;
     margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .conversations.grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (max-width: 640px) {

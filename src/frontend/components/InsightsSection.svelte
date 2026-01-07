@@ -12,7 +12,7 @@
       <Button icon={FileText} onclick={generateReport}>generate report</Button>
     </header>
     <div class="insights-list">
-      {#each $insights as insight}
+      {#each $insights.slice(0, 3) as insight}
         <div class="insight-item">
           <span class="insight-icon">{INSIGHT_ICONS[insight.type] || '>'}</span>
           <span class="insight-message">{insight.message}</span>
