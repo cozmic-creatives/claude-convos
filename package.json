@@ -1,0 +1,32 @@
+{
+  "name": "claude-conversations",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A dashboard to help Claude Code users declutter and remember what they're working on",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"node index.js --api-only\"",
+    "build": "vite build",
+    "start": "node index.js",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "dashboard",
+    "conversations",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "lucide-svelte": "^0.562.0",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "concurrently": "^9.1.2",
+    "svelte": "^5.16.2",
+    "vite": "^6.0.7"
+  }
+}
